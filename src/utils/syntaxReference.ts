@@ -1,4 +1,4 @@
-import type { DiagramType } from "./detectDiagramType";
+import type { DiagramType } from "../models";
 
 export interface SyntaxEntry {
   label: string;

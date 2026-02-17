@@ -1,19 +1,7 @@
-import type { Exporter, ExportOptions } from "./types";
+import type { Exporter, ExportOptions } from "../models";
+import { parseSvgDimensions } from "../models";
 
-export function parseSvgDimensions(svgHtml: string): { w: number; h: number } {
-  const viewBoxMatch = svgHtml.match(/viewBox=["']([^"']+)["']/);
-  if (viewBoxMatch) {
-    const parts = viewBoxMatch[1].split(/[\s,]+/).map(Number);
-    return { w: parts[2] ?? 800, h: parts[3] ?? 600 };
-  }
-
-  const widthMatch = svgHtml.match(/\bwidth=["']([^"']+)["']/);
-  const heightMatch = svgHtml.match(/\bheight=["']([^"']+)["']/);
-  return {
-    w: widthMatch ? Number.parseFloat(widthMatch[1]) : 800,
-    h: heightMatch ? Number.parseFloat(heightMatch[1]) : 600,
-  };
-}
+export { parseSvgDimensions };
 
 export function renderToCanvas(
   svgHtml: string,

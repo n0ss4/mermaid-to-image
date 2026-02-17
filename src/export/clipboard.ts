@@ -1,4 +1,4 @@
-import type { Exporter, ExportOptions } from "./types";
+import type { Exporter, ExportOptions } from "../models";
 import { parseSvgDimensions, renderToCanvas } from "./png";
 
 export const clipboardExporter: Exporter = {

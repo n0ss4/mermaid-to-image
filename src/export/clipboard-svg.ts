@@ -1,4 +1,4 @@
-import type { Exporter, ExportOptions } from "./types";
+import type { Exporter, ExportOptions } from "../models";
 
 export const clipboardSvgExporter: Exporter = {
   name: "SVG",

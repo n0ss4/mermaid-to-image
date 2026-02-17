@@ -1,3 +1,6 @@
+export { MERMAID_THEMES } from "../models/Theme";
+export type { MermaidTheme } from "../models/Theme";
+
 export const SAMPLE = `gantt
   title Project Timeline
   dateFormat  YYYY-MM-DD
@@ -13,9 +16,6 @@ export const SAMPLE = `gantt
 
   section Launch
   Release        :milestone, 2026-03-26, 0d`;
-
-export const MERMAID_THEMES = ["default", "dark", "forest", "neutral"] as const;
-export type MermaidTheme = (typeof MERMAID_THEMES)[number];
 
 export const DEFAULT_MERMAID_CONFIG = {
   startOnLoad: false,
