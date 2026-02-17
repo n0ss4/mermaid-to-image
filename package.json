@@ -3,6 +3,9 @@
   "module": "src/index.ts",
   "type": "module",
   "private": true,
+  "scripts": {
+    "build": "bun build src/index.html --outdir=dist --minify"
+  },
   "devDependencies": {
     "@types/bun": "latest",
     "@types/lz-string": "^1.5.0"
