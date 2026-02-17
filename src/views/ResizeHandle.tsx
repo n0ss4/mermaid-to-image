@@ -41,6 +41,12 @@ export function ResizeHandle({ onResize }: ResizeHandleProps) {
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
-    />
+    >
+      <div className="resize-grip">
+        <span className="resize-dot" />
+        <span className="resize-dot" />
+        <span className="resize-dot" />
+      </div>
+    </div>
   );
 }

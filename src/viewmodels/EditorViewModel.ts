@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import type { MermaidTheme, DiagramType } from "../models";
 import { detectDiagramType } from "../models";
 import type { IRenderService, IShareService, IClipboardService } from "../services";
+import { parseDiagramElements, type ParsedElement } from "../utils/parseDiagramElements";
 
 export interface EditorViewModelValue {
   code: string;
@@ -9,6 +10,7 @@ export interface EditorViewModelValue {
   svgHtml: string;
   error: string;
   diagramType: DiagramType;
+  parsedElements: ParsedElement[];
   mermaidTheme: MermaidTheme;
   setMermaidTheme: (theme: MermaidTheme) => void;
   exportScale: number;
@@ -68,6 +70,7 @@ export function useEditorViewModel({
   }, [activeCode, activeMermaidTheme, renderService]);
 
   const diagramType = detectDiagramType(activeCode);
+  const parsedElements = useMemo(() => parseDiagramElements(activeCode, diagramType), [activeCode, diagramType]);
 
   const handleShare = useCallback(() => {
     const url = shareService.encodeAndApply({ code: activeCode, mermaidTheme: activeMermaidTheme });
@@ -87,6 +90,7 @@ export function useEditorViewModel({
     svgHtml,
     error,
     diagramType,
+    parsedElements,
     mermaidTheme: activeMermaidTheme,
     setMermaidTheme,
     exportScale: activeExportScale,

@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from "react";
-import { Plus, X } from "lucide-react";
+import { Plus, X, Pencil } from "lucide-react";
 import { useTabVM } from "../viewmodels";
 
 export function TabBar() {
@@ -7,7 +7,7 @@ export function TabBar() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const editRef = useRef<HTMLSpanElement>(null);
 
-  const handleDoubleClick = useCallback((id: string) => {
+  const startRename = useCallback((id: string) => {
     setEditingId(id);
     requestAnimationFrame(() => {
       const el = editRef.current;
@@ -51,7 +51,7 @@ export function TabBar() {
                 setActive(tab.id);
               }
             }}
-            onDoubleClick={() => handleDoubleClick(tab.id)}
+            onDoubleClick={() => startRename(tab.id)}
           >
             {editingId === tab.id ? (
               <span
@@ -71,7 +71,19 @@ export function TabBar() {
                 {tab.name}
               </span>
             ) : (
-              <span className="tab-name">{tab.name}</span>
+              <>
+                <span className="tab-name">{tab.name}</span>
+                <button
+                  className="tab-rename-hint"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    startRename(tab.id);
+                  }}
+                  title="Rename tab"
+                >
+                  <Pencil size={10} />
+                </button>
+              </>
             )}
             {tabs.length > 1 && (
               <button
@@ -80,7 +92,7 @@ export function TabBar() {
                   e.stopPropagation();
                   closeTab(tab.id);
                 }}
-                title="Close tab"
+                title="Close tab (⌘W)"
               >
                 <X size={12} />
               </button>
@@ -88,7 +100,7 @@ export function TabBar() {
           </div>
         ))}
       </div>
-      <button className="tab-add" onClick={() => addTab()} title="New tab">
+      <button className="tab-add" onClick={() => addTab()} title="New tab (⌘N)">
         <Plus size={14} />
       </button>
     </div>

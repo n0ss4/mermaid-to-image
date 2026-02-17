@@ -4,6 +4,7 @@ import { ServiceProvider } from "./ServiceProvider";
 import { ThemeProvider } from "./ThemeProvider";
 import { TabProvider } from "./TabProvider";
 import { EditorProvider } from "./EditorProvider";
+import { ToastProvider } from "./ToastProvider";
 
 export function AppProvider({
   registry,
@@ -13,14 +14,16 @@ export function AppProvider({
   readonly children: ReactNode;
 }) {
   return (
-    <ServiceProvider registry={registry}>
-      <ThemeProvider>
-        <TabProvider>
-          <EditorProvider>
-            {children}
-          </EditorProvider>
-        </TabProvider>
-      </ThemeProvider>
-    </ServiceProvider>
+    <ToastProvider>
+      <ServiceProvider registry={registry}>
+        <ThemeProvider>
+          <TabProvider>
+            <EditorProvider>
+              {children}
+            </EditorProvider>
+          </TabProvider>
+        </ThemeProvider>
+      </ServiceProvider>
+    </ToastProvider>
   );
 }

@@ -1,14 +1,15 @@
 import { useEffect, useRef, useCallback, useState, type DragEvent } from "react";
 import { EditorView, basicSetup } from "codemirror";
-import { EditorState, StateEffect, StateField } from "@codemirror/state";
-import { Decoration, type DecorationSet } from "@codemirror/view";
+import { EditorState, StateEffect, StateField, RangeSet } from "@codemirror/state";
+import { Decoration, type DecorationSet, gutter, GutterMarker } from "@codemirror/view";
 import { oneDark } from "@codemirror/theme-one-dark";
 import { keymap } from "@codemirror/view";
 import { indentWithTab } from "@codemirror/commands";
-import { Upload } from "lucide-react";
+import { Upload, AlertTriangle } from "lucide-react";
 import { useThemeVM } from "../viewmodels";
 import { mermaid } from "../lang/mermaid-lang";
 import { parseErrorLine } from "../utils/parseErrorLine";
+import { formatError } from "../utils/formatError";
 
 const setErrorLine = StateEffect.define<number | null>();
 
@@ -30,6 +31,40 @@ const errorLineField = StateField.define<DecorationSet>({
     }
     return deco;
   },
+});
+
+class ErrorMarker extends GutterMarker {
+  override toDOM() {
+    const span = document.createElement("span");
+    span.className = "cm-error-marker";
+    span.textContent = "\u25CF";
+    return span;
+  }
+}
+
+const errorMarkerInstance = new ErrorMarker();
+
+const errorGutterField = StateField.define<RangeSet<GutterMarker>>({
+  create: () => RangeSet.empty,
+  update(markers, tr) {
+    for (const e of tr.effects) {
+      if (e.is(setErrorLine)) {
+        if (e.value === null) return RangeSet.empty;
+        const line = e.value;
+        if (line > 0 && line <= tr.state.doc.lines) {
+          const lineObj = tr.state.doc.line(line);
+          return RangeSet.of([errorMarkerInstance.range(lineObj.from)]);
+        }
+        return RangeSet.empty;
+      }
+    }
+    return markers;
+  },
+});
+
+const errorGutter = gutter({
+  class: "cm-error-gutter",
+  markers: (v) => v.state.field(errorGutterField),
 });
 
 interface CodeEditorProps {
@@ -88,6 +123,8 @@ export function CodeEditor({ value, onChange, error }: CodeEditorProps) {
       updateListener,
       EditorView.lineWrapping,
       errorLineField,
+      errorGutterField,
+      errorGutter,
     ];
 
     if (theme === "dark") {
@@ -142,6 +179,12 @@ export function CodeEditor({ value, onChange, error }: CodeEditorProps) {
           <Upload size={14} />
         </button>
       </div>
+      {error && (
+        <div className="editor-error-banner">
+          <AlertTriangle size={14} />
+          <span>{formatError(error)}</span>
+        </div>
+      )}
       <div
         className={`code-editor-wrap${dragOver ? " drag-over" : ""}`}
         onDragOver={(e) => {

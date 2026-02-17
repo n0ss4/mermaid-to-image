@@ -8,12 +8,13 @@ export class MermaidRenderService implements IRenderService {
     if (!code.trim()) {
       return { svg: "", error: "" };
     }
+    const id = `mermaid-${Date.now()}`;
     try {
       mermaid.initialize({ ...DEFAULT_MERMAID_CONFIG, theme });
-      const id = `mermaid-${Date.now()}`;
       const { svg } = await mermaid.render(id, code.trim());
       return { svg, error: "" };
     } catch (e) {
+      document.getElementById(`d${id}`)?.remove();
       const message = e instanceof Error ? e.message : "Invalid syntax";
       return { svg: "", error: message };
     }

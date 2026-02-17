@@ -1,26 +1,17 @@
 import { useState, useRef, useEffect } from "react";
 import { ChevronDown, Download, Clipboard } from "lucide-react";
-import type { Exporter, MermaidTheme } from "../models";
-import { MERMAID_THEMES } from "../models";
+import type { Exporter } from "../models";
 import type { ExportViewModelValue } from "../viewmodels";
+import { useToast } from "../viewmodels/providers/ToastProvider";
 
 interface ExportDropdownProps {
   readonly vm: ExportViewModelValue;
-  readonly exportScale: number;
-  readonly onScaleChange: (scale: number) => void;
-  readonly mermaidTheme: MermaidTheme;
-  readonly onMermaidThemeChange: (theme: MermaidTheme) => void;
 }
 
-export function ExportDropdown({
-  vm,
-  exportScale,
-  onScaleChange,
-  mermaidTheme,
-  onMermaidThemeChange,
-}: ExportDropdownProps) {
+export function ExportDropdown({ vm }: ExportDropdownProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const { showToast } = useToast();
 
   useEffect(() => {
     if (!open) return;
@@ -43,6 +34,11 @@ export function ExportDropdown({
   const handleExport = (exporter: Exporter) => {
     vm.runExport(exporter);
     setOpen(false);
+    if (exporter.extension) {
+      showToast("Downloaded!");
+    } else {
+      showToast("Copied to clipboard!");
+    }
   };
 
   const downloadExporters = vm.exporters.filter((e) => e.extension);
@@ -78,31 +74,6 @@ export function ExportDropdown({
               <Clipboard size={13} /> Copy {exp.name}
             </button>
           ))}
-          <div className="export-dropdown-divider" />
-          <div className="export-dropdown-row">
-            <label>Theme</label>
-            <select
-              value={mermaidTheme}
-              onChange={(e) => onMermaidThemeChange(e.target.value as MermaidTheme)}
-            >
-              {MERMAID_THEMES.map((t) => (
-                <option key={t} value={t}>
-                  {t.charAt(0).toUpperCase() + t.slice(1)}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="export-dropdown-row">
-            <label>Scale</label>
-            <select
-              value={exportScale}
-              onChange={(e) => onScaleChange(Number(e.target.value))}
-            >
-              {[1, 2, 3, 4, 6, 8].map((s) => (
-                <option key={s} value={s}>{s}x</option>
-              ))}
-            </select>
-          </div>
         </div>
       )}
     </div>

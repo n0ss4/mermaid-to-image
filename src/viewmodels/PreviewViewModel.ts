@@ -15,6 +15,7 @@ export interface PreviewViewModelValue {
     zoomIn: () => void;
     zoomOut: () => void;
     fitToView: () => void;
+    fitToWidth: () => void;
   };
   isFullscreen: boolean;
   toggleFullscreen: () => void;
@@ -38,18 +39,36 @@ export function usePreviewViewModel(svgHtml: string): PreviewViewModelValue {
     }
     const vpW = vp.clientWidth;
     const vpH = vp.clientHeight;
+    if (vpW === 0 || vpH === 0) return;
     const { w: svgW, h: svgH } = parseSvgDimensions(svgHtml);
     const PADDING = 0.95;
     const scaleX = (vpW / svgW) * PADDING;
     const scaleY = (vpH / svgH) * PADDING;
     const newZoom = Math.min(scaleX, scaleY, 1);
-    setZoom(Math.max(newZoom, 0.5));
+    setZoom(Math.max(newZoom, 0.1));
     setPan({ x: 0, y: 0 });
   }, [svgHtml]);
 
+  const fitToWidth = useCallback(() => {
+    const vp = viewportRef.current;
+    if (!vp || !svgHtml) return;
+    const vpW = vp.clientWidth;
+    const { w: svgW } = parseSvgDimensions(svgHtml);
+    const newZoom = (vpW / svgW) * 0.95;
+    setZoom(Math.max(Math.min(newZoom, 1), 0.1));
+    setPan({ x: 0, y: 0 });
+  }, [svgHtml]);
+
+  // Only auto-fit when svgHtml transitions from empty → non-empty
+  // (first render / tab switch), not on every keystroke edit
+  const prevSvgRef = useRef("");
   useEffect(() => {
-    requestAnimationFrame(() => fitToView());
-  }, [fitToView]);
+    const wasEmpty = !prevSvgRef.current;
+    prevSvgRef.current = svgHtml;
+    if (wasEmpty && svgHtml) {
+      requestAnimationFrame(() => fitToView());
+    }
+  }, [svgHtml, fitToView]);
 
   // Fullscreen escape handler
   useEffect(() => {
@@ -108,7 +127,7 @@ export function usePreviewViewModel(svgHtml: string): PreviewViewModelValue {
       onPointerMove: handlePointerMove,
       onPointerUp: handlePointerUp,
     },
-    controls: { zoomIn, zoomOut, fitToView },
+    controls: { zoomIn, zoomOut, fitToView, fitToWidth },
     isFullscreen,
     toggleFullscreen,
   };

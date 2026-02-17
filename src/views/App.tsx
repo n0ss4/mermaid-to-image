@@ -7,6 +7,7 @@ import { EditorPanel } from "./EditorPanel";
 import { PreviewPanel } from "./PreviewPanel";
 import { ResizeHandle } from "./ResizeHandle";
 import { TemplateGallery } from "./TemplateGallery";
+import { KeyboardShortcutsModal } from "./KeyboardShortcutsModal";
 
 export function App() {
   const { tabs, activeTabId, addTab, closeTab, setActive, updateTab } = useTabVM();
@@ -15,6 +16,7 @@ export function App() {
   const preview = usePreviewViewModel(editor.svgHtml);
 
   const [showTemplates, setShowTemplates] = useState(false);
+  const [showShortcuts, setShowShortcuts] = useState(false);
   const [splitFraction, setSplitFraction] = useState(0.42);
 
   // URL hydration
@@ -46,20 +48,28 @@ export function App() {
     if (!editor.svgHtml) return null;
     return { svgHtml: editor.svgHtml, scale: editor.exportScale };
   }, [editor.svgHtml, editor.exportScale]);
+  const handleShowShortcuts = useCallback(() => setShowShortcuts(true), []);
 
   useKeyboardShortcuts({
     onNewTab: handleNewTab,
     onCloseTab: handleCloseTab,
     onPrevTab: handlePrevTab,
     onNextTab: handleNextTab,
+    onZoomIn: preview.controls.zoomIn,
+    onZoomOut: preview.controls.zoomOut,
+    onZoomReset: preview.controls.fitToView,
+    onShowShortcuts: handleShowShortcuts,
     getExportOptions,
   });
 
-  const gridColumns = `${splitFraction}fr 6px ${1 - splitFraction}fr`;
+  const gridColumns = `${splitFraction}fr 8px ${1 - splitFraction}fr`;
 
   return (
     <>
-      <Header onShowTemplates={() => setShowTemplates(true)} />
+      <Header
+        onShowTemplates={() => setShowTemplates(true)}
+        onShowShortcuts={handleShowShortcuts}
+      />
       <TabBar />
       <div className="layout" style={{ gridTemplateColumns: gridColumns }}>
         <EditorPanel />
@@ -68,13 +78,21 @@ export function App() {
           preview={preview}
           svgHtml={editor.svgHtml}
           error={editor.error}
+          mermaidTheme={editor.mermaidTheme}
+          onMermaidThemeChange={editor.setMermaidTheme}
+          exportScale={editor.exportScale}
+          onScaleChange={editor.setExportScale}
         />
       </div>
+      <footer className="app-footer">Nossair &copy; 2026</footer>
       {showTemplates && (
         <TemplateGallery
           onSelect={editor.handleTemplateSelect}
           onClose={() => setShowTemplates(false)}
         />
+      )}
+      {showShortcuts && (
+        <KeyboardShortcutsModal onClose={() => setShowShortcuts(false)} />
       )}
     </>
   );

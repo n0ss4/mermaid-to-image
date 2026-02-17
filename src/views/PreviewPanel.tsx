@@ -1,13 +1,20 @@
-import { ZoomIn, ZoomOut, Scan, Maximize, Minimize } from "lucide-react";
+import { ZoomIn, ZoomOut, Scan, MoveHorizontal, Maximize, Minimize, AlertTriangle } from "lucide-react";
 import type { PreviewViewModelValue } from "../viewmodels";
+import type { MermaidTheme } from "../models";
+import { MERMAID_THEMES } from "../models";
+import { formatError } from "../utils/formatError";
 
 interface PreviewPanelProps {
   readonly preview: PreviewViewModelValue;
   readonly svgHtml: string;
   readonly error: string;
+  readonly mermaidTheme: MermaidTheme;
+  readonly onMermaidThemeChange: (theme: MermaidTheme) => void;
+  readonly exportScale: number;
+  readonly onScaleChange: (scale: number) => void;
 }
 
-export function PreviewPanel({ preview, svgHtml, error }: PreviewPanelProps) {
+export function PreviewPanel({ preview, svgHtml, error, mermaidTheme, onMermaidThemeChange, exportScale, onScaleChange }: PreviewPanelProps) {
   const { zoom, pan, viewportRef, handlers, controls, isFullscreen, toggleFullscreen } = preview;
   const zoomPercent = Math.round(zoom * 100);
 
@@ -17,11 +24,31 @@ export function PreviewPanel({ preview, svgHtml, error }: PreviewPanelProps) {
     >
       <div className="panel-header">
         <span className="panel-label">Preview</span>
+        <div className="preview-settings">
+          <select
+            value={mermaidTheme}
+            onChange={(e) => onMermaidThemeChange(e.target.value as MermaidTheme)}
+          >
+            {MERMAID_THEMES.map((t) => (
+              <option key={t} value={t}>
+                {t.charAt(0).toUpperCase() + t.slice(1)}
+              </option>
+            ))}
+          </select>
+          <select
+            value={exportScale}
+            onChange={(e) => onScaleChange(Number(e.target.value))}
+          >
+            {[1, 2, 3, 4, 6, 8].map((s) => (
+              <option key={s} value={s}>{s}x</option>
+            ))}
+          </select>
+        </div>
         <div className="zoom-controls">
           <button
             className="btn-icon"
             onClick={controls.zoomOut}
-            title="Zoom out"
+            title="Zoom out (⌘-)"
           >
             <ZoomOut size={14} />
           </button>
@@ -29,16 +56,23 @@ export function PreviewPanel({ preview, svgHtml, error }: PreviewPanelProps) {
           <button
             className="btn-icon"
             onClick={controls.zoomIn}
-            title="Zoom in"
+            title="Zoom in (⌘+)"
           >
             <ZoomIn size={14} />
           </button>
           <button
             className="btn-icon"
             onClick={controls.fitToView}
-            title="Fit to view"
+            title="Fit to view (⌘0)"
           >
             <Scan size={14} />
+          </button>
+          <button
+            className="btn-icon"
+            onClick={controls.fitToWidth}
+            title="Fit width"
+          >
+            <MoveHorizontal size={14} />
           </button>
           <button
             className="btn-icon"
@@ -57,7 +91,11 @@ export function PreviewPanel({ preview, svgHtml, error }: PreviewPanelProps) {
         onPointerMove={handlers.onPointerMove}
         onPointerUp={handlers.onPointerUp}
       >
-        {error && <p className="error-msg">{error}</p>}
+        {error && (
+          <p className="error-msg">
+            <AlertTriangle size={14} /> {formatError(error)}
+          </p>
+        )}
         {!error && svgHtml && (
           <div
             className="preview-canvas"

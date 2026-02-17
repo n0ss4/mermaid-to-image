@@ -20,3 +20,4 @@ export { ThemeProvider, useThemeVM } from "./providers/ThemeProvider";
 export { TabProvider, useTabVM } from "./providers/TabProvider";
 export { EditorProvider, useEditorVM } from "./providers/EditorProvider";
 export { AppProvider } from "./providers/AppProvider";
+export { ToastProvider, useToast } from "./providers/ToastProvider";

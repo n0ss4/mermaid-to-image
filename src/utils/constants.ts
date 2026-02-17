@@ -19,6 +19,7 @@ export const SAMPLE = `gantt
 
 export const DEFAULT_MERMAID_CONFIG = {
   startOnLoad: false,
+  suppressErrorRendering: true,
   securityLevel: "loose" as const,
   fontFamily:
     '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif',
