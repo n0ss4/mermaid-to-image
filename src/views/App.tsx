@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { Github, Linkedin, Twitter } from "lucide-react";
 import type { MermaidTheme } from "../models";
 import { useEditorVM, useTabVM, useServices, usePreviewViewModel, useUrlHydration, useKeyboardShortcuts } from "../viewmodels";
 import { Header } from "./Header";
@@ -6,6 +7,7 @@ import { TabBar } from "./TabBar";
 import { EditorPanel } from "./EditorPanel";
 import { PreviewPanel } from "./PreviewPanel";
 import { ResizeHandle } from "./ResizeHandle";
+import { PanelToggle } from "./PanelToggle";
 import { TemplateGallery } from "./TemplateGallery";
 import { KeyboardShortcutsModal } from "./KeyboardShortcutsModal";
 
@@ -18,6 +20,7 @@ export function App() {
   const [showTemplates, setShowTemplates] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [splitFraction, setSplitFraction] = useState(0.42);
+  const [activePanel, setActivePanel] = useState<"editor" | "preview">("editor");
 
   // URL hydration
   const shared = useUrlHydration(share);
@@ -71,7 +74,8 @@ export function App() {
         onShowShortcuts={handleShowShortcuts}
       />
       <TabBar />
-      <div className="layout" style={{ gridTemplateColumns: gridColumns }}>
+      <PanelToggle activePanel={activePanel} onToggle={setActivePanel} />
+      <div className="layout" data-active-panel={activePanel} style={{ gridTemplateColumns: gridColumns }}>
         <EditorPanel />
         <ResizeHandle onResize={setSplitFraction} />
         <PreviewPanel
@@ -84,7 +88,20 @@ export function App() {
           onScaleChange={editor.setExportScale}
         />
       </div>
-      <footer className="app-footer">Nossair &copy; 2026</footer>
+      <footer className="app-footer">
+        <span>Nossair &copy; 2026</span>
+        <div className="footer-socials">
+          <a href="https://github.com/n0ss4" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+            <Github size={16} />
+          </a>
+          <a href="https://linkedin.com/in/nghazouani" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+            <Linkedin size={16} />
+          </a>
+          <a href="https://x.com/nossairdev" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
+            <Twitter size={16} />
+          </a>
+        </div>
+      </footer>
       {showTemplates && (
         <TemplateGallery
           onSelect={editor.handleTemplateSelect}

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, type RefObject, type WheelEvent, type PointerEvent } from "react";
+import { useState, useEffect, useLayoutEffect, useRef, useCallback, type RefObject, type PointerEvent } from "react";
 import { parseSvgDimensions } from "../models";
 
 export interface PreviewViewModelValue {
@@ -6,7 +6,6 @@ export interface PreviewViewModelValue {
   pan: { x: number; y: number };
   viewportRef: RefObject<HTMLDivElement | null>;
   handlers: {
-    onWheel: (e: WheelEvent) => void;
     onPointerDown: (e: PointerEvent) => void;
     onPointerMove: (e: PointerEvent) => void;
     onPointerUp: () => void;
@@ -59,16 +58,17 @@ export function usePreviewViewModel(svgHtml: string): PreviewViewModelValue {
     setPan({ x: 0, y: 0 });
   }, [svgHtml]);
 
-  // Only auto-fit when svgHtml transitions from empty → non-empty
-  // (first render / tab switch), not on every keystroke edit
+  // Reset to 100% zoom when svgHtml transitions from empty → non-empty
+  // (first render / tab switch), not on every keystroke edit.
   const prevSvgRef = useRef("");
-  useEffect(() => {
+  useLayoutEffect(() => {
     const wasEmpty = !prevSvgRef.current;
     prevSvgRef.current = svgHtml;
     if (wasEmpty && svgHtml) {
-      requestAnimationFrame(() => fitToView());
+      setZoom(1);
+      setPan({ x: 0, y: 0 });
     }
-  }, [svgHtml, fitToView]);
+  }, [svgHtml]);
 
   // Fullscreen escape handler
   useEffect(() => {
@@ -80,10 +80,18 @@ export function usePreviewViewModel(svgHtml: string): PreviewViewModelValue {
     return () => globalThis.removeEventListener("keydown", handleKeyDown);
   }, [isFullscreen]);
 
-  const handleWheel = useCallback((e: WheelEvent) => {
-    e.preventDefault();
-    const delta = e.deltaY > 0 ? -0.1 : 0.1;
-    setZoom((z) => Math.min(Math.max(0.1, z + delta), 10));
+  // Attach wheel listener imperatively with { passive: false }
+  // so preventDefault() works (React's onWheel is passive by default).
+  useEffect(() => {
+    const vp = viewportRef.current;
+    if (!vp) return;
+    const onWheel = (e: globalThis.WheelEvent) => {
+      e.preventDefault();
+      const delta = e.deltaY > 0 ? -0.1 : 0.1;
+      setZoom((z) => Math.min(Math.max(0.1, z + delta), 10));
+    };
+    vp.addEventListener("wheel", onWheel, { passive: false });
+    return () => vp.removeEventListener("wheel", onWheel);
   }, []);
 
   const handlePointerDown = useCallback(
@@ -122,7 +130,6 @@ export function usePreviewViewModel(svgHtml: string): PreviewViewModelValue {
     pan,
     viewportRef,
     handlers: {
-      onWheel: handleWheel,
       onPointerDown: handlePointerDown,
       onPointerMove: handlePointerMove,
       onPointerUp: handlePointerUp,

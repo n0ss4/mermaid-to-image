@@ -1,7 +1,7 @@
 import { ZoomIn, ZoomOut, Scan, MoveHorizontal, Maximize, Minimize, AlertTriangle } from "lucide-react";
 import type { PreviewViewModelValue } from "../viewmodels";
 import type { MermaidTheme } from "../models";
-import { MERMAID_THEMES } from "../models";
+import { MERMAID_THEMES, parseSvgDimensions } from "../models";
 import { formatError } from "../utils/formatError";
 
 interface PreviewPanelProps {
@@ -86,7 +86,6 @@ export function PreviewPanel({ preview, svgHtml, error, mermaidTheme, onMermaidT
       <div
         className="preview-viewport"
         ref={viewportRef}
-        onWheel={handlers.onWheel}
         onPointerDown={handlers.onPointerDown}
         onPointerMove={handlers.onPointerMove}
         onPointerUp={handlers.onPointerUp}
@@ -100,6 +99,7 @@ export function PreviewPanel({ preview, svgHtml, error, mermaidTheme, onMermaidT
           <div
             className="preview-canvas"
             style={{
+              ...(() => { const d = parseSvgDimensions(svgHtml); return { width: d.w, height: d.h }; })(),
               transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
             }}
             dangerouslySetInnerHTML={{ __html: svgHtml }}
