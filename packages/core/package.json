@@ -1,0 +1,16 @@
+{
+  "name": "@repo/core",
+  "type": "module",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts",
+    "./diagram": "./src/domain/diagram/index.ts"
+  },
+  "dependencies": {
+    "lz-string": "^1.5.0"
+  },
+  "scripts": {
+    "build": "bun build src/index.ts --outdir=dist --target=node",
+    "test": "bun test"
+  }
+}

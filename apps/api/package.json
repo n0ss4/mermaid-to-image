@@ -1,0 +1,14 @@
+{
+  "name": "@repo/api",
+  "module": "src/index.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "bun --hot src/index.ts",
+    "build": "bun build src/index.ts --outdir=dist --target=bun",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@repo/core": "workspace:*"
+  }
+}

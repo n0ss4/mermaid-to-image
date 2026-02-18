@@ -1,29 +1,30 @@
 {
-  "name": "mermaid-editor",
-  "module": "src/index.ts",
-  "type": "module",
+  "name": "mermaid-monorepo",
   "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
-    "build": "bun build src/index.html --outdir=dist --minify"
+    "dev:web": "cd apps/web && bun run dev",
+    "dev:api": "cd apps/api && bun run dev",
+    "dev": "bun run dev:web & bun run dev:api",
+    "build:web": "cd apps/web && bun run build",
+    "build:api": "cd apps/api && bun run build",
+    "build:core": "cd packages/core && bun run build",
+    "build": "bun run build:core && bun run build:web && bun run build:api",
+    "test:web": "cd apps/web && bun run test",
+    "test:api": "cd apps/api && bun run test",
+    "test:core": "cd packages/core && bun run test",
+    "test": "bun run test:core && bun run test:web && bun run test:api",
+    "typecheck:web": "cd apps/web && bunx tsc -p tsconfig.json --noEmit",
+    "typecheck:api": "cd apps/api && bunx tsc -p tsconfig.json --noEmit",
+    "typecheck:core": "cd packages/core && bunx tsc -p tsconfig.json --noEmit",
+    "typecheck": "bun run typecheck:core && bun run typecheck:web && bun run typecheck:api"
   },
   "devDependencies": {
     "@types/bun": "latest",
-    "@types/lz-string": "^1.5.0"
-  },
-  "peerDependencies": {
-    "typescript": "^5"
-  },
-  "dependencies": {
-    "@codemirror/lang-markdown": "^6.5.0",
-    "@codemirror/theme-one-dark": "^6.1.3",
-    "@types/react": "^19.2.14",
-    "@types/react-dom": "^19.2.3",
-    "codemirror": "^6.0.2",
-    "fflate": "^0.8.2",
-    "lucide-react": "^0.564.0",
-    "lz-string": "^1.5.0",
-    "mermaid": "^11.12.2",
-    "react": "^19.2.4",
-    "react-dom": "^19.2.4"
+    "typescript": "^5.9.2"
   }
 }
