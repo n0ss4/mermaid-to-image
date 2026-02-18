@@ -89,6 +89,7 @@ export function PreviewPanel({ preview, svgHtml, error, mermaidTheme, onMermaidT
         onPointerDown={handlers.onPointerDown}
         onPointerMove={handlers.onPointerMove}
         onPointerUp={handlers.onPointerUp}
+        onPointerCancel={handlers.onPointerCancel}
       >
         {error && (
           <p className="error-msg">

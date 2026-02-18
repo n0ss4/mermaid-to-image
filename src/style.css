@@ -332,6 +332,7 @@ body {
   overflow: hidden;
   cursor: grab;
   min-height: 0;
+  touch-action: none;
   background:
     radial-gradient(circle, var(--preview-dot) 0.8px, transparent 0.8px);
   background-size: 20px 20px;

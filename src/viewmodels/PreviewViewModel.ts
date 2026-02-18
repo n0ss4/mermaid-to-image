@@ -1,15 +1,12 @@
-import { useState, useEffect, useLayoutEffect, useRef, useCallback, type RefObject, type PointerEvent } from "react";
+import { useState, useEffect, useLayoutEffect, useRef, useCallback, type RefObject } from "react";
 import { parseSvgDimensions } from "../models";
+import { useGestureControl, type GestureHandlers } from "./useGestureControl";
 
 export interface PreviewViewModelValue {
   zoom: number;
   pan: { x: number; y: number };
   viewportRef: RefObject<HTMLDivElement | null>;
-  handlers: {
-    onPointerDown: (e: PointerEvent) => void;
-    onPointerMove: (e: PointerEvent) => void;
-    onPointerUp: () => void;
-  };
+  handlers: GestureHandlers;
   controls: {
     zoomIn: () => void;
     zoomOut: () => void;
@@ -24,10 +21,9 @@ export function usePreviewViewModel(svgHtml: string): PreviewViewModelValue {
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const isPanning = useRef(false);
-  const panStart = useRef({ x: 0, y: 0 });
-  const panOffset = useRef({ x: 0, y: 0 });
   const viewportRef = useRef<HTMLDivElement>(null);
+
+  const handlers = useGestureControl(viewportRef, pan, setZoom, setPan);
 
   const fitToView = useCallback(() => {
     const vp = viewportRef.current;
@@ -80,44 +76,6 @@ export function usePreviewViewModel(svgHtml: string): PreviewViewModelValue {
     return () => globalThis.removeEventListener("keydown", handleKeyDown);
   }, [isFullscreen]);
 
-  // Attach wheel listener imperatively with { passive: false }
-  // so preventDefault() works (React's onWheel is passive by default).
-  useEffect(() => {
-    const vp = viewportRef.current;
-    if (!vp) return;
-    const onWheel = (e: globalThis.WheelEvent) => {
-      e.preventDefault();
-      const delta = e.deltaY > 0 ? -0.1 : 0.1;
-      setZoom((z) => Math.min(Math.max(0.1, z + delta), 10));
-    };
-    vp.addEventListener("wheel", onWheel, { passive: false });
-    return () => vp.removeEventListener("wheel", onWheel);
-  }, []);
-
-  const handlePointerDown = useCallback(
-    (e: PointerEvent) => {
-      isPanning.current = true;
-      panStart.current = { x: e.clientX, y: e.clientY };
-      panOffset.current = { ...pan };
-      (e.target as HTMLElement).setPointerCapture(e.pointerId);
-    },
-    [pan]
-  );
-
-  const handlePointerMove = useCallback((e: PointerEvent) => {
-    if (!isPanning.current) return;
-    const dx = e.clientX - panStart.current.x;
-    const dy = e.clientY - panStart.current.y;
-    setPan({
-      x: panOffset.current.x + dx,
-      y: panOffset.current.y + dy,
-    });
-  }, []);
-
-  const handlePointerUp = useCallback(() => {
-    isPanning.current = false;
-  }, []);
-
   const zoomIn = useCallback(() => setZoom((z) => Math.min(z + 0.25, 10)), []);
   const zoomOut = useCallback(() => setZoom((z) => Math.max(z - 0.25, 0.1)), []);
 
@@ -129,11 +87,7 @@ export function usePreviewViewModel(svgHtml: string): PreviewViewModelValue {
     zoom,
     pan,
     viewportRef,
-    handlers: {
-      onPointerDown: handlePointerDown,
-      onPointerMove: handlePointerMove,
-      onPointerUp: handlePointerUp,
-    },
+    handlers,
     controls: { zoomIn, zoomOut, fitToView, fitToWidth },
     isFullscreen,
     toggleFullscreen,

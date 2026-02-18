@@ -10,6 +10,9 @@ export { useEditorViewModel } from "./EditorViewModel";
 export type { PreviewViewModelValue } from "./PreviewViewModel";
 export { usePreviewViewModel } from "./PreviewViewModel";
 
+export type { GestureHandlers } from "./useGestureControl";
+export { useGestureControl } from "./useGestureControl";
+
 export type { ExportViewModelValue } from "./ExportViewModel";
 export { useExportViewModel } from "./ExportViewModel";
 
